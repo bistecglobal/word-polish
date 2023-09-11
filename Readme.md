@@ -9,3 +9,5 @@ npm install
 ```shell
 npm start
 ```
+## Preview
+![Alt text](./docs/screen.png "Preview")
