@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@fluentui/react": "^8.52.3",
+    "axios": "^1.5.0",
     "core-js": "^3.9.1",
     "es6-promise": "^4.2.8",
     "openai": "^4.6.0",

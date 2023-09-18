@@ -108,7 +108,12 @@ export default class App extends React.Component<AppProps, AppState> {
           <p className="ms-font-l">
             Add Openai api key, then click <b>Convert</b>.
           </p>
-          <input type="text" onChange={(e) => this.setState({ apiKey: e.target.value })} />
+          <input
+            title="Api Key"
+            style={{ fontSize: "15.rem" }}
+            type="text"
+            onChange={(e) => this.setState({ apiKey: e.target.value })}
+          />
           <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.convert}>
             Convert
           </DefaultButton>

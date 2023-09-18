@@ -5,7 +5,8 @@ export class OpenAiApi {
   constructor(apiKey) {
     // Create the Configuration and OpenAIApi instances
     this.openAI = new OpenAI({
-      apiKey, // defaults to process.env["OPENAI_API_KEY"]
+      apiKey: apiKey, // defaults to process.env["OPENAI_API_KEY"]
+      dangerouslyAllowBrowser: true,
     });
   }
   // Asynchronous function to generate text from the OpenAI API
