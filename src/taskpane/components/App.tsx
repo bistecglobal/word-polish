@@ -4,10 +4,9 @@ import Header from "./Header";
 import HeroList, { HeroListItem } from "./HeroList";
 import Progress from "./Progress";
 import { OpenAiApi } from "../../services/openai";
-import { Component } from 'react';
-import KeyIcon from '@mui/icons-material/Key';
+import { Component } from "react";
+import KeyIcon from "@mui/icons-material/Key";
 import { Button, IconButton } from "@mui/material";
-
 
 /* global Word, require */
 
@@ -19,27 +18,24 @@ export interface AppProps {
 export interface AppState {
   listItems: HeroListItem[];
   apiKey: string;
-  levelOfFormat: string;
-  wordCount: string;
+
   presetFormat: string;
   showModalEdit: boolean;
   showModalAdd: boolean;
   showPopup: boolean;
   promtPreset: any[];
   selectedIndex: number;
+  promptFromat: string;
 }
 
 export default class App extends React.Component<AppProps, AppState> {
-
-
   constructor(props, context) {
     super(props, context);
     this.state = {
       listItems: [],
       apiKey: "",
-      levelOfFormat: "",
-      wordCount: "",
       presetFormat: "",
+      promptFromat: "",
       showModalEdit: false,
       showModalAdd: false,
       showPopup: false,
@@ -49,100 +45,95 @@ export default class App extends React.Component<AppProps, AppState> {
   }
 
   componentDidMount() {
-    const apikeyValue = Office.context.document.settings.get('apikey')
+    const apikeyValue = Office.context.document.settings.get("apikey");
     {
       const apikey = JSON.parse(apikeyValue) || [];
       this.setState({ apiKey: apikey });
-      console.log(apikey)
     }
-    const result = Office.context.document.settings.get('promtPreset')
+    const result = Office.context.document.settings.get("promtPreset");
     {
       const promtPreset = JSON.parse(result) || [];
       this.setState({ promtPreset });
     }
   }
 
-  handleChangeLevel = (e) => {
-    this.setState({
-      levelOfFormat: e.target.value
-    });
-  }
-
-  handleChangeCount = (e) => {
-    this.setState({
-      wordCount: e.target.value
-    });
-  }
 
   toggleModalEdit = () => {
-    if (this.state.selectedIndex === 0) {
-      this.populateEditFields(0)
+    if (this.state.promtPreset.length > 0) {
+      if (this.state.selectedIndex === 0) {
+        this.populateEditFields(0);
+      }
+      this.setState((prevState) => ({
+        showModalEdit: !prevState.showModalEdit,
+      }));
     }
-    this.setState(prevState => ({
-      showModalEdit: !prevState.showModalEdit
-    }));
-  }
+  };
 
   toggleModalAdd = () => {
-    this.setState(prevState => ({
-      showModalAdd: !prevState.showModalAdd
+    this.setState({
+      promptFromat: 'convert this text'
+    });
+    this.setState((prevState) => ({
+      showModalAdd: !prevState.showModalAdd,
     }));
-  }
+  };
 
   toggleshowPopup = () => {
-    this.setState(prevState => ({
-      showPopup: !prevState.showPopup
+    this.setState((prevState) => ({
+      showPopup: !prevState.showPopup,
     }));
-  }
+  };
   toggleAPIKeySave = () => {
-    Office.context.document.settings.set('apikey', JSON.stringify(this.state.apiKey));
+    Office.context.document.settings.set("apikey", JSON.stringify(this.state.apiKey));
     Office.context.document.settings.saveAsync((result) => {
       if (result.status === Office.AsyncResultStatus.Succeeded) {
-        console.log('Custom setting saved successfully');
+        console.log("Custom setting saved successfully");
       } else {
-        console.error('Error saving custom setting: ' + result.error.message);
+        console.error("Error saving custom setting: " + result.error.message);
       }
     });
-
-  }
+  };
   toggleModalSave = () => {
+    Office.context.document.settings.remove("promtPreset");
     // Create a new item to add to promtPreset
     const newItem = {
       format: this.state.presetFormat,
-      wordCount: this.state.wordCount,
-      textLevel: this.state.levelOfFormat,
+      promptFromat: this.state.promptFromat,
     };
     // Add the new item to the existing promtPreset
     const updatedPromtPreset = [...this.state.promtPreset, newItem];
 
     // Save the updated promtPreset settings after converting to JSON
-    Office.context.document.settings.set('promtPreset', JSON.stringify(updatedPromtPreset));
+    Office.context.document.settings.set("promtPreset", JSON.stringify(updatedPromtPreset));
     Office.context.document.settings.saveAsync((result) => {
       if (result.status === Office.AsyncResultStatus.Succeeded) {
-        console.log('Custom setting saved successfully');
+        console.log("Custom setting saved successfully");
         this.setState({ promtPreset: updatedPromtPreset }); // Update state with the new promtPreset
       } else {
-        console.error('Error saving custom setting: ' + result.error.message);
+        console.error("Error saving custom setting: " + result.error.message);
       }
     });
-  }
+    this.toggleModalAdd()
+  };
 
   // Function to populate the editing modal fields with the values of the selected item
   populateEditFields = (index) => {
     const selectedPreset = this.state.promtPreset[index];
-    this.setState({
-      selectedIndex: index,
-      wordCount: selectedPreset.wordCount,
-      levelOfFormat: selectedPreset.textLevel,
-      presetFormat: selectedPreset.format,
-      // Set other modal fields if needed
-    });
-  }
+    if (selectedPreset != "" && selectedPreset != "") {
+      this.setState({
+        selectedIndex: index,
+        presetFormat: selectedPreset.format,
+        promptFromat: selectedPreset.promptFromat,
+        // Set other modal fields if needed
+      });
+    }
+    console.log("Custom setting" + this.state.promptFromat);
+  };
   onChangeDropdown = (value, index) => {
-    this.setState({ presetFormat: value })
-    this.populateEditFields(index)
-    console.log(value + '   ' + index)
-  }
+    this.setState({ presetFormat: value });
+    this.populateEditFields(index);
+    console.log(value + "   " + index);
+  };
   toggleModalUpdate = () => {
     const { selectedIndex } = this.state;
 
@@ -153,41 +144,39 @@ export default class App extends React.Component<AppProps, AppState> {
 
     const updatedItem = {
       format: this.state.presetFormat,
-      wordCount: this.state.wordCount,
-      textLevel: this.state.levelOfFormat,
+      promptFromat: this.state.promptFromat,
     };
 
     const updatedPromtPreset = [...this.state.promtPreset];
     updatedPromtPreset[selectedIndex] = updatedItem;
 
-    Office.context.document.settings.set('promtPreset', JSON.stringify(updatedPromtPreset));
+    Office.context.document.settings.set("promtPreset", JSON.stringify(updatedPromtPreset));
     Office.context.document.settings.saveAsync((result) => {
       if (result.status === Office.AsyncResultStatus.Succeeded) {
-        console.log('Custom setting saved successfully');
+        console.log("Custom setting saved successfully");
         this.setState({
           promtPreset: updatedPromtPreset,
           selectedIndex: -1,
         });
       } else {
-        console.error('Error saving custom setting: ' + result.error.message);
+        console.error("Error saving custom setting: " + result.error.message);
       }
     });
-  }
+    this.toggleModalEdit()
+  };
 
   convert = async () => {
     return Word.run(async (context) => {
-
       try {
-
         if (this.state.selectedIndex === 0) {
-          this.populateEditFields(0)
+          this.populateEditFields(0);
         }
         const words = context.document.getSelection();
 
         const word = words.load();
         await context.sync();
         const openai = new OpenAiApi(this.state.apiKey);
-        const prompt = `act as a '${this.state.presetFormat}', text level '${this.state.levelOfFormat}', max word count '${this.state.wordCount}' , convert this text ${word.text.trim()}.`;
+        const prompt = `${this.state.promptFromat}', ${word.text.trim()}.`;
 
         const converted = await openai.generateText(prompt);
         console.log(converted);
@@ -224,18 +213,6 @@ export default class App extends React.Component<AppProps, AppState> {
   };
 
   render() {
-    // const { title, isOfficeInitialized } = this.props;
-
-
-    // if (!isOfficeInitialized) {
-    //   return (
-    //     <Progress
-    //       title={title}
-    //       logo={require("./../../../assets/logo-filled.png")}
-    //       message="Please sideload your addin to see app body."
-    //     />
-    //   );
-    // }
 
     const { showModalEdit } = this.state;
     const { showModalAdd } = this.state;
@@ -246,11 +223,8 @@ export default class App extends React.Component<AppProps, AppState> {
         <Header logo={require("./../../../assets/BisLogo.png")} title={this.props.title} message="Welcome" />
 
         <HeroList message="Convert your content to predefined presets with chat gpt" items={this.state.listItems}>
-
           <div className="ms-text-level">
-            <label className="ms-font-2" >
-              Select a Preset:
-            </label>
+            <label className="ms-font-2">Select a Preset:</label>
             <div className="ms-dropdown">
               <select
                 className="ms-dropbtn"
@@ -265,65 +239,47 @@ export default class App extends React.Component<AppProps, AppState> {
             </div>
           </div>
 
-
           <DefaultButton className="ms-welcome__action1" onClick={this.convert}>
             Convert
           </DefaultButton>
 
-          <DefaultButton className="ms-welcome__action2" onClick={this.toggleModalEdit} >
+          <DefaultButton className="ms-welcome__action2" onClick={this.toggleModalEdit}>
             Edit
           </DefaultButton>
 
-          <DefaultButton className="ms-welcome__action3" onClick={this.toggleModalAdd} >
+          <DefaultButton className="ms-welcome__action3" onClick={this.toggleModalAdd}>
             Add
           </DefaultButton>
 
-          <IconButton className="ms-icon" onClick={this.toggleshowPopup} >
-              <KeyIcon />
+          <IconButton className="ms-icon" onClick={this.toggleshowPopup}>
+            <KeyIcon />
           </IconButton>
-
 
           {showModalEdit && (
             <div className="modal">
               <div className="modal-content">
-                <span className="close" onClick={this.toggleModalEdit}>&times;</span>
+                <span className="close" onClick={this.toggleModalEdit}>
+                  &times;
+                </span>
 
-                <div className="ms-word-count" >
-                  <label className="ms-font-2-1">
-                    Max word count:
-                  </label>
-                  <div className="ms-inputbox3">
-                    <input
-                      className="ms-input-3"
-                      title="Word Count"
-                      style={{ fontSize: "15.rem" }}
-                      type="text"
-                      value={this.state.wordCount}
-                      onChange={(e) => this.setState({ wordCount: e.target.value })}
-                    />
+                <div className="ms-prompt">
+                  <label className="ms-font-2-2">Prompt</label>
+                  <div className="ms-preset-inputbox-3">
+                    <textarea
+                      id="noter-text-area"
+                      name="textarea"
+                      value={this.state.promptFromat}
+                      className="ms-input-3-1"
+                      title="Your Prompt"
+                      style={{ fontSize: "15.rem", width: "243px", height: "243px" }}
+                      onChange={(e) => this.setState({ promptFromat: e.target.value })}
+                    ></textarea>
                   </div>
                 </div>
 
-                <div className="ms-perset1" >
-                  <label className="ms-font-2-2">
-                    Set the text level:
-                  </label>
-                  <div className="ms-preset-inputbox1">
-                    <input
-                      className="ms-input-3"
-                      title="Word Count"
-                      style={{ fontSize: "15.rem" }}
-                      type="text"
-                      value={this.state.levelOfFormat}
-                      onChange={(e) => this.setState({ levelOfFormat: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <DefaultButton className="ms-edit-save" onClick={this.toggleModalUpdate} >
+                <DefaultButton className="ms-edit-save" onClick={this.toggleModalUpdate}>
                   Save
                 </DefaultButton>
-
               </div>
             </div>
           )}
@@ -331,56 +287,43 @@ export default class App extends React.Component<AppProps, AppState> {
           {showModalAdd && (
             <div className="modal">
               <div className="modal-content">
-                <span className="close" onClick={this.toggleModalAdd}>&times;</span>
-
-                <div className="ms-preset" >
-                  <label className="ms-font-2-3">
-                    Act as a:
-                  </label>
-                  <div className="ms-preset-inputbox2">
-                    <input
-                      className="ms-input-3"
-                      title="act as a"
-                      style={{ fontSize: "15.rem" }}
-                      type="text"
-                      onChange={(e) => this.setState({ presetFormat: e.target.value })}
-                    />
+                <span className="close" onClick={this.toggleModalAdd}>
+                  &times;
+                </span>
+                <form>
+                  <div className="ms-preset">
+                    <label className="ms-font-2-3">Act as a:</label>
+                    <div className="ms-preset-inputbox2">
+                      <input
+                        required
+                        className="ms-input-3"
+                        title="act as a"
+                        style={{ fontSize: "15.rem" }}
+                        type="text"
+                        onChange={(e) => this.setState({ presetFormat: e.target.value })}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="ms-word-count-add" >
-                  <label className="ms-font-2-4">
-                    Max word count:
-                  </label>
-                  <div className="ms-inputbox3">
-                    <input
-                      className="ms-input-3"
-                      title="Word Count"
-                      style={{ fontSize: "15.rem" }}
-                      type="text"
-                      onChange={(e) => this.setState({ wordCount: e.target.value })}
-                    />
+                  <div className="ms-prompt">
+                    <label className="ms-font-2-2">Prompt</label>
+                    <div className="ms-preset-inputbox-3">
+                      <textarea
+                        id="noter-text-area"
+                        name="textarea"
+                        className="ms-input-3-1"
+                        title="Your Prompt"
+                        style={{ fontSize: "15.rem", width: "243px", height: "243px" }}
+                        value={this.state.promptFromat}
+                        onChange={(e) => this.setState({ promptFromat: e.target.value })}
+                      ></textarea>
+                    </div>
                   </div>
-                </div>
 
-                <div className="ms-perset1" >
-                  <label className="ms-font-2-5">
-                    Set the text level:
-                  </label>
-                  <div className="ms-preset-inputbox1">
-                    <input
-                      className="ms-input-3"
-                      title="Word Count"
-                      style={{ fontSize: "15.rem" }}
-                      type="text"
-                      onChange={(e) => this.setState({ levelOfFormat: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <DefaultButton className="ms-edit-save" onClick={this.toggleModalSave} >
-                  Save
-                </DefaultButton>
+                  <DefaultButton className="ms-edit-save" onClick={this.toggleModalSave}>
+                    Save
+                  </DefaultButton>
+                </form>
 
               </div>
             </div>
@@ -389,12 +332,12 @@ export default class App extends React.Component<AppProps, AppState> {
           {showPopup && (
             <div className="modal">
               <div className="modal-content">
-                <span className="close" onClick={this.toggleshowPopup}>&times;</span>
+                <span className="close" onClick={this.toggleshowPopup}>
+                  &times;
+                </span>
 
-                <div className="ms-word-count" >
-                  <label className="ms-font-2-1">
-                    API Key
-                  </label>
+                <div className="ms-word-count">
+                  <label className="ms-font-2-1">API Key</label>
                   <div className="ms-inputbox3">
                     <input
                       className="ms-input-3"
@@ -406,14 +349,12 @@ export default class App extends React.Component<AppProps, AppState> {
                   </div>
                 </div>
 
-                <DefaultButton className="ms-edit-save" onClick={this.toggleAPIKeySave} >
+                <DefaultButton className="ms-edit-save" onClick={this.toggleAPIKeySave}>
                   Save
                 </DefaultButton>
-
               </div>
             </div>
           )}
-
         </HeroList>
       </div>
     );
