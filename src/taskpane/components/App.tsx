@@ -7,7 +7,7 @@ import { OpenAiApi } from "../../services/openai";
 import { Component } from "react";
 import KeyIcon from "@mui/icons-material/Key";
 import { Button, IconButton } from "@mui/material";
-
+import axios from 'axios';
 /* global Word, require */
 
 export interface AppProps {
@@ -57,7 +57,6 @@ export default class App extends React.Component<AppProps, AppState> {
     }
   }
 
-
   toggleModalEdit = () => {
     if (this.state.promtPreset.length > 0) {
       if (this.state.selectedIndex === 0) {
@@ -71,7 +70,7 @@ export default class App extends React.Component<AppProps, AppState> {
 
   toggleModalAdd = () => {
     this.setState({
-      promptFromat: 'convert this text'
+      promptFromat: "convert this text",
     });
     this.setState((prevState) => ({
       showModalAdd: !prevState.showModalAdd,
@@ -113,7 +112,7 @@ export default class App extends React.Component<AppProps, AppState> {
         console.error("Error saving custom setting: " + result.error.message);
       }
     });
-    this.toggleModalAdd()
+    this.toggleModalAdd();
   };
 
   // Function to populate the editing modal fields with the values of the selected item
@@ -162,7 +161,7 @@ export default class App extends React.Component<AppProps, AppState> {
         console.error("Error saving custom setting: " + result.error.message);
       }
     });
-    this.toggleModalEdit()
+    this.toggleModalEdit();
   };
 
   convert = async () => {
@@ -212,8 +211,17 @@ export default class App extends React.Component<AppProps, AppState> {
     });
   };
 
-  render() {
+  sendDataToServer = (promtPreset) => {
+    axios.post('/api/saveData', promtPreset)
+      .then(response => {
+        console.log('Data sent successfully:', response.data);
+      })
+      .catch(error => {
+        console.error('Error sending data: ', error);
+      });
+  };
 
+  render() {
     const { showModalEdit } = this.state;
     const { showModalAdd } = this.state;
     const { showPopup } = this.state;
@@ -324,7 +332,6 @@ export default class App extends React.Component<AppProps, AppState> {
                     Save
                   </DefaultButton>
                 </form>
-
               </div>
             </div>
           )}
