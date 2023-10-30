@@ -11,7 +11,7 @@ initializeIcons();
 
 let isOfficeInitialized = false;
 
-const title = "Contoso Task Pane Add-in";
+const title = "Bistec Word Polish";
 
 const render = (Component) => {
   ReactDOM.render(
