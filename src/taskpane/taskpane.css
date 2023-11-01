@@ -83,7 +83,28 @@ ul {
    border-width: 1px;
 }
 
+.ms-input-4{
+   margin:8px 0 10px 0;
+   padding: 3px;
+   border-radius: 5px;
+   border-width: 1px;
+}
+
+.ms-input-5 {
+   margin:8px 0 10px 0;
+   padding: 3px;
+   border-radius: 5px;
+   border-width: 1px;
+}
+
 .ms-input-3-1 {
+   margin:8px 0 10px 0;
+   padding: 3PX;
+   border-radius: 5px;
+   border-width: 1px;
+}
+
+.ms-input-4-1 {
    margin:8px 0 10px 0;
    padding: 3PX;
    border-radius: 5px;
@@ -98,7 +119,7 @@ ul {
 }
 
 .ms-word-count {
-   margin-top: 20px;
+   margin-top: 30px;
 }
 
 .ms-preset {
@@ -111,6 +132,7 @@ ul {
 }
 
 .ms-welcome__action1 {
+   display: inline-block;
    margin-right: 200px;
    border-radius: 5px;
 }
@@ -131,6 +153,18 @@ ul {
    border-radius: 5px;
 }
 
+
+
+.ms-SystemPrompt {
+   position: relative;
+   left: 90px;
+   bottom: 71px;
+   margin-right: 200px;
+   border-radius: 5px;
+   padding: 5px;
+
+}
+
 .ms-icon {
    position: relative;
    left: 50px;
@@ -141,6 +175,13 @@ ul {
    position: relative;
    top: 10px;
    margin-right: 175px;
+   border-radius: 5px;
+}
+
+.ms-edit-save-1 {
+   position: relative;
+   bottom: 50px;
+   left: 90px;
    border-radius: 5px;
 }
 
@@ -204,3 +245,4 @@ b {
    text-decoration: none;
    cursor: pointer;
 }
+
