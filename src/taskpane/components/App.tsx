@@ -1,5 +1,5 @@
 import * as React from "react";
-import { DefaultButton } from "@fluentui/react";
+import { DefaultButton, Spinner } from "@fluentui/react";
 import Header from "./Header";
 import HeroList, { HeroListItem } from "./HeroList";
 import Progress from "./Progress";
@@ -15,6 +15,12 @@ export interface AppProps {
   isOfficeInitialized: boolean;
 }
 
+export interface Preset {
+  format: string;
+  promptFormat: string;
+  systemPromptFormat: string;
+}
+
 export interface AppState {
   listItems: HeroListItem[];
   apiKey: string;
@@ -23,9 +29,11 @@ export interface AppState {
   showModalEdit: boolean;
   showModalAdd: boolean;
   showPopup: boolean;
-  promptPreset: any[];
+  promptPreset: Preset[];
   selectedIndex: number;
   promptFormat: string;
+  systemPromptFormat: string;
+  loading: boolean;
 }
 
 export default class App extends React.Component<AppProps, AppState> {
@@ -36,11 +44,13 @@ export default class App extends React.Component<AppProps, AppState> {
       apiKey: "",
       presetFormat: "",
       promptFormat: "",
+      systemPromptFormat: "",
       showModalEdit: false,
       showModalAdd: false,
       showPopup: false,
       promptPreset: [],
       selectedIndex: 0,
+      loading: false,
     };
   }
 
@@ -71,7 +81,8 @@ export default class App extends React.Component<AppProps, AppState> {
 
   toggleModalAdd = () => {
     this.setState({
-      promptFormat: 'Act as a experienced solutions arechitect. Convert following text into professional text'
+      promptFormat: 'Convert following text into professional text',
+      systemPromptFormat: 'Act as a experienced solutions arechitect.',
     });
     this.setState((prevState) => ({
       showModalAdd: !prevState.showModalAdd,
@@ -98,17 +109,18 @@ export default class App extends React.Component<AppProps, AppState> {
     // Create a new item to add to promtPreset
     const newItem = {
       format: this.state.presetFormat,
-      promptFromat: this.state.promptFormat,
+      promptFormat: this.state.promptFormat,
+      systemPromptFormat: this.state.systemPromptFormat,
     };
     // Add the new item to the existing promtPreset
-    const updatedPromtPreset = [...this.state.promptPreset, newItem];
+    const updatedPromptPreset = [...this.state.promptPreset, newItem];
 
     // Save the updated promtPreset settings after converting to JSON
-    Office.context.document.settings.set("promtPreset", JSON.stringify(updatedPromtPreset));
+    Office.context.document.settings.set("promtPreset", JSON.stringify(updatedPromptPreset));
     Office.context.document.settings.saveAsync((result) => {
       if (result.status === Office.AsyncResultStatus.Succeeded) {
         console.log("Custom setting saved successfully");
-        this.setState({ promptPreset: updatedPromtPreset }); // Update state with the new promtPreset
+        this.setState({ promptPreset: updatedPromptPreset }); // Update state with the new promtPreset
       } else {
         console.error("Error saving custom setting: " + result.error.message);
       }
@@ -119,11 +131,12 @@ export default class App extends React.Component<AppProps, AppState> {
   // Function to populate the editing modal fields with the values of the selected item
   populateEditFields = (index) => {
     const selectedPreset = this.state.promptPreset[index];
-    if (selectedPreset != "" && selectedPreset != "") {
+    if (selectedPreset) {
       this.setState({
         selectedIndex: index,
         presetFormat: selectedPreset.format,
-        promptFormat: selectedPreset.promptFromat,
+        promptFormat: selectedPreset.promptFormat,
+        systemPromptFormat: selectedPreset.systemPromptFormat
         // Set other modal fields if needed
       });
     }
@@ -142,9 +155,10 @@ export default class App extends React.Component<AppProps, AppState> {
       return;
     }
 
-    const updatedItem = {
+    const updatedItem: Preset = {
       format: this.state.presetFormat,
-      promptFromat: this.state.promptFormat,
+      promptFormat: this.state.promptFormat,
+      systemPromptFormat: this.state.systemPromptFormat,
     };
 
     const updatedPromtPreset = [...this.state.promptPreset];
@@ -166,7 +180,10 @@ export default class App extends React.Component<AppProps, AppState> {
   };
 
   convert = async () => {
+    if (this.state.loading) return;
+
     return Word.run(async (context) => {
+      
       try {
         if (this.state.selectedIndex === 0) {
           this.populateEditFields(0);
@@ -177,8 +194,10 @@ export default class App extends React.Component<AppProps, AppState> {
         await context.sync();
         const openai = new OpenAiApi(this.state.apiKey);
 
-        const converted = await openai.generateText(this.state.promptFormat, word.text.trim());
-        console.log(converted);
+        const prompt = `${this.state.promptFormat} #user_input: ${word.text.trim()}`;
+        this.setState({ loading: true });
+        const converted = await openai.generateText(this.state.systemPromptFormat, prompt);
+        this.setState({ loading: false });
         words.insertText(converted, "Replace");
 
         await context.sync();
@@ -238,9 +257,8 @@ export default class App extends React.Component<AppProps, AppState> {
           </div>
 
           <DefaultButton className="ms-welcome__action1" onClick={this.convert}>
-            Convert
+            {this.state.loading ? <Spinner /> : "Convert"}
           </DefaultButton>
-
           <DefaultButton className="ms-welcome__action2" onClick={this.toggleModalEdit}>
             Edit
           </DefaultButton>
@@ -259,6 +277,21 @@ export default class App extends React.Component<AppProps, AppState> {
                 <span className="close" onClick={this.toggleModalEdit}>
                   &times;
                 </span>
+
+                <div className="ms-prompt">
+                  <label className="ms-font-2-2">System Prompt</label>
+                  <div className="ms-preset-inputbox-3">
+                    <textarea
+                      id="noter-text-area"
+                      name="textarea"
+                      value={this.state.systemPromptFormat}
+                      className="ms-input-3-1"
+                      title="Your Prompt"
+                      style={{ fontSize: "15.rem", width: "243px", height: "243px" }}
+                      onChange={(e) => this.setState({ systemPromptFormat: e.target.value })}
+                    ></textarea>
+                  </div>
+                </div>
 
                 <div className="ms-prompt">
                   <label className="ms-font-2-2">Prompt</label>
@@ -300,6 +333,21 @@ export default class App extends React.Component<AppProps, AppState> {
                         type="text"
                         onChange={(e) => this.setState({ presetFormat: e.target.value })}
                       />
+                    </div>
+                  </div>
+
+                  <div className="ms-prompt">
+                    <label className="ms-font-2-2">System Prompt</label>
+                    <div className="ms-preset-inputbox-3">
+                      <textarea
+                        id="noter-text-area"
+                        name="textarea"
+                        className="ms-input-3-1"
+                        title="Your Prompt"
+                        style={{ fontSize: "15.rem", width: "243px", height: "243px" }}
+                        value={this.state.systemPromptFormat}
+                        onChange={(e) => this.setState({ systemPromptFormat: e.target.value })}
+                      ></textarea>
                     </div>
                   </div>
 
