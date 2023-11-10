@@ -30,7 +30,7 @@
     "@fluentui/react": "^8.52.3",
     "@mui/icons-material": "^5.14.14",
     "@mui/material": "^5.14.14",
-    "axios": "^1.5.0",
+    "axios": "^1.6.0",
     "core-js": "^3.9.1",
     "es6-promise": "^4.2.8",
     "openai": "^4.6.0",
